@@ -1,0 +1,7 @@
+# DropGit Robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://ais-dev-aptqxhrwpa6rvnsmqenhq5-369696962713.europe-west2.run.app/sitemap.xml

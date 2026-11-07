@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Clean dark backdrop container with subtle rounded corners -->
+  <rect width="64" height="64" rx="14" fill="#0E1015"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" stroke="rgba(255, 255, 255, 0.12)" stroke-width="2"/>
+  
+  <!-- Subtle inner gradient glow -->
+  <circle cx="32" cy="20" r="18" fill="white" fill-opacity="0.04"/>
+
+  <!-- Download Arrow -->
+  <path d="M32 16V37M32 37L22 27M32 37L42 27" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Archive Tray Base -->
+  <path d="M19 43H45" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
