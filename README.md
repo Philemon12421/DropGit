@@ -123,4 +123,3 @@ DropGit is fully installable as a native-feeling application:
 ## 📄 License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
-# DropGit

@@ -1,5 +1,5 @@
 import { validateUrl } from '../utils/ssrf.ts';
-import { DirectFileInfo } from '../../src/types/index.ts';
+import type { DirectFileInfo } from '../../src/types/index.ts';
 
 export async function analyzeDirectFile(rawUrl: string): Promise<DirectFileInfo> {
   const validation = validateUrl(rawUrl);

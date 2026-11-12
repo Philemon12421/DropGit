@@ -1,4 +1,4 @@
-import { AnalyzedRepoInfo, FileItem } from '../../src/types/index.ts';
+import type { AnalyzedRepoInfo, FileItem } from '../../src/types/index.ts';
 
 interface ParsedGitHubUrl {
   owner: string;

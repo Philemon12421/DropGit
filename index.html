@@ -49,6 +49,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Defensive suppression for Vite HMR WebSocket disconnects in iframe/proxy environments -->
+    <script>
+      window.addEventListener('unhandledrejection', function (e) {
+        if (e && e.reason && typeof e.reason.message === 'string' && (e.reason.message.includes('WebSocket closed') || e.reason.message.includes('vite:ws'))) {
+          e.preventDefault();
+        }
+      });
+    </script>
 
     <!-- Schema.org Structured Data (JSON-LD) -->
     <script type="application/ld+json">

@@ -5,6 +5,11 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import { apiRouter } from './server/routes/api.ts';
 
+// Fix for environments or tools setting globalThis.__dirname to '.'
+if (typeof (globalThis as any).__dirname === 'string' && (globalThis as any).__dirname === '.') {
+  delete (globalThis as any).__dirname;
+}
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -39,10 +44,11 @@ async function startServer() {
 
   // Vite middleware in dev or static files in production
   const distPath = path.resolve(__dirname, 'dist');
-  if (isProd && fs.existsSync(distPath)) {
+  const distIndexHtml = path.resolve(distPath, 'index.html');
+  if (isProd || fs.existsSync(distIndexHtml)) {
     app.use(express.static(distPath));
     app.get('*', (_req, res) => {
-      res.sendFile(path.resolve(distPath, 'index.html'));
+      res.sendFile(distIndexHtml);
     });
   } else {
     // Development mode with Vite middleware
@@ -52,6 +58,7 @@ async function startServer() {
         middlewareMode: true,
         host: '0.0.0.0',
         port: PORT,
+        hmr: false,
       },
       appType: 'spa',
     });

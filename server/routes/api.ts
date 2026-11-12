@@ -1,9 +1,10 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { validateUrl } from '../utils/ssrf.ts';
 import { parseGitHubUrl, analyzeGitHubRepo } from '../services/github.ts';
 import { parseGitLabUrl, analyzeGitLabRepo } from '../services/gitlab.ts';
 import { analyzeDirectFile } from '../services/directUrl.ts';
-import { createZipFromFiles, FileToZip } from '../services/archiver.ts';
+import { createZipFromFiles, type FileToZip } from '../services/archiver.ts';
 
 export const apiRouter = Router();
 
