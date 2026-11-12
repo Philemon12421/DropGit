@@ -59,12 +59,61 @@ export async function packageAndDownloadFiles(
         });
 
         try {
-          const downloadUrl = `/api/download-proxy?url=${encodeURIComponent(file.downloadUrl || '')}&filename=${encodeURIComponent(file.name)}`;
-          const response = await fetch(downloadUrl, { signal: abortSignal });
-          if (!response.ok) {
-            zip.file(relPath + '.error.txt', `Failed to download: HTTP ${response.status}`);
+          let blob: Blob | null = null;
+
+          // Tier 1: Direct fetch from downloadUrl (fastest, CORS enabled on raw.githubusercontent.com)
+          if (file.downloadUrl) {
+            try {
+              const directRes = await fetch(file.downloadUrl, { signal: abortSignal });
+              if (directRes.ok) {
+                blob = await directRes.blob();
+              }
+            } catch {
+              // Direct fetch CORS or network error, proceed to fallback tiers
+            }
+          }
+
+          // Tier 2: Backend download proxy
+          if (!blob && file.downloadUrl) {
+            try {
+              const downloadUrl = `/api/download-proxy?url=${encodeURIComponent(file.downloadUrl)}&filename=${encodeURIComponent(file.name)}`;
+              const response = await fetch(downloadUrl, { signal: abortSignal });
+              if (response.ok) {
+                blob = await response.blob();
+              }
+            } catch {
+              // Proxy not available
+            }
+          }
+
+          // Tier 3: GitHub Blobs API with base64 decoding (100% CORS-friendly)
+          if (!blob && file.sha && file.downloadUrl) {
+            try {
+              const match = file.downloadUrl.match(/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)/);
+              if (match) {
+                const [, owner, repo] = match;
+                const blobApiUrl = `https://api.github.com/repos/${owner}/${repo}/git/blobs/${file.sha}`;
+                const blobRes = await fetch(blobApiUrl, { signal: abortSignal });
+                if (blobRes.ok) {
+                  const blobJson = await blobRes.json();
+                  if (blobJson.encoding === 'base64' && blobJson.content) {
+                    const binaryString = atob(blobJson.content.replace(/\s/g, ''));
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let b = 0; b < binaryString.length; b++) {
+                      bytes[b] = binaryString.charCodeAt(b);
+                    }
+                    blob = new Blob([bytes]);
+                  }
+                }
+              }
+            } catch {
+              // Ignore
+            }
+          }
+
+          if (!blob) {
+            zip.file(relPath + '.error.txt', 'Failed to download file: Could not fetch from remote host or proxy.');
           } else {
-            const blob = await response.blob();
             totalBytes += blob.size;
             zip.file(relPath, blob);
           }
