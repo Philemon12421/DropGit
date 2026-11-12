@@ -14,6 +14,12 @@
   - Hierarchical folder tree with expand/collapse.
   - Live real-time filename and path filtering.
   - In-browser code, text, and image preview with syntax line numbering and clipboard copy.
+- **GitHub Username Checker & Developer Explorer**:
+  - Live username availability check (identifies active users, organizations, or claimable handles).
+  - Clean developer profiles: About, Avatar, Followers, Following, Total Stars, Public Gists, and Account age.
+  - Achievements and milestones detection (Starstruck, Decade Veteran, Arctic Code Vault, Polyglot Architect, Pull Shark, Active Committer).
+  - Recent public commits and activity stream.
+  - Top starred repositories with 1-click "Extract with DropGit" button to download or explore directly.
 - **Progressive Web App (PWA)**:
   - Installable directly to desktop or mobile home screens.
   - Service worker caching with offline fallback indicator.

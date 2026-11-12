@@ -1,14 +1,22 @@
 import React, { useState, useRef } from 'react';
-import { Search, Clipboard, X, Download, Loader2, GitBranch, FolderGit2, FileText, Globe, Check } from 'lucide-react';
+import { Search, Clipboard, X, Download, Loader2, GitBranch, FolderGit2, FileText, Globe, Check, ArrowDownToLine, User, Star } from 'lucide-react';
 import { detectUrlPlatform, cleanUrl } from '../utils/format.ts';
 
 interface HeroProps {
   onAnalyze: (url: string, autoDownloadZip?: boolean) => void;
   isLoading: boolean;
   initialUrl?: string;
+  activeTab?: 'downloader' | 'user-checker';
+  onChangeTab?: (tab: 'downloader' | 'user-checker') => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onAnalyze, isLoading, initialUrl = '' }) => {
+export const Hero: React.FC<HeroProps> = ({
+  onAnalyze,
+  isLoading,
+  initialUrl = '',
+  activeTab = 'downloader',
+  onChangeTab,
+}) => {
   const [url, setUrl] = useState(initialUrl);
   const [pasted, setPasted] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -71,11 +79,54 @@ export const Hero: React.FC<HeroProps> = ({ onAnalyze, isLoading, initialUrl = '
       <div className="absolute bottom-10 right-1/4 w-[250px] h-[250px] bg-neutral-200/40 dark:bg-neutral-800/20 blur-[100px] rounded-full pointer-events-none -z-10 animate-pulse-glow" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        {/* Editorial Subtitle / Kicker */}
-        <div className="inline-flex items-center gap-2 text-[11px] sm:text-xs font-semibold tracking-wider text-neutral-500 dark:text-neutral-400 mb-4 uppercase">
-          <span>Instant Repository &amp; Folder Extraction</span>
-          <span aria-hidden="true">·</span>
-          <span>No Git Required</span>
+        {/* Prominent Tool Switcher Tabs */}
+        {onChangeTab && (
+          <div className="inline-flex items-center p-1.5 rounded-2xl bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 backdrop-blur-md mb-6 shadow-sm">
+            <button
+              type="button"
+              onClick={() => onChangeTab('downloader')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === 'downloader'
+                  ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-md scale-100'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <ArrowDownToLine className="w-4 h-4" />
+              <span>Universal Downloader</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onChangeTab('user-checker')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === 'user-checker'
+                  ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-md scale-100'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <User className="w-4 h-4 text-emerald-500" />
+              <span>GitHub Username Checker</span>
+              <span className="px-1.5 py-0.5 text-[10px] uppercase font-extrabold bg-emerald-500 text-white rounded-md">New</span>
+            </button>
+          </div>
+        )}
+
+        {/* Company attribution & Star Repo Banner */}
+        <div className="flex items-center justify-center gap-2.5 text-xs text-neutral-600 dark:text-neutral-400 mb-5 flex-wrap">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>A product of <strong className="font-bold text-neutral-900 dark:text-white">Drenchack Tech Company</strong></span>
+          </span>
+          <span aria-hidden="true" className="opacity-40">·</span>
+          <a
+            href="https://github.com/Philemon12421/DropGit"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-amber-500 hover:text-amber-600 dark:hover:text-amber-400 font-semibold transition-colors group"
+          >
+            <Star className="w-3.5 h-3.5 fill-amber-500 group-hover:scale-110 transition-transform" />
+            <span>Star this repo on GitHub</span>
+          </a>
         </div>
 
         {/* Hero Title */}

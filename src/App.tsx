@@ -17,10 +17,14 @@ import {
   getDownloadHistory,
   clearDownloadHistory,
 } from './services/clientDownloader.ts';
+import { UserChecker } from './components/UserChecker/UserChecker.tsx';
 import { AnalyzedRepoInfo, DirectFileInfo, DownloadProgressState, FileItem, HistoryItem } from './types/index.ts';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X, User } from 'lucide-react';
 
 export default function App() {
+  // Tab switcher state ('downloader' | 'user-checker')
+  const [activeTab, setActiveTab] = useState<'downloader' | 'user-checker'>('downloader');
+  const [selectedUserForChecker, setSelectedUserForChecker] = useState<string>('');
   // Theme state
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     try {
@@ -86,6 +90,22 @@ export default function App() {
   };
 
   const handleAnalyze = async (url: string, autoDownloadZip = false) => {
+    // If user entered a GitHub user profile URL like github.com/torvalds
+    try {
+      const trimmed = url.trim();
+      const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+      if (parsed.hostname.includes('github.com')) {
+        const parts = parsed.pathname.split('/').filter(Boolean);
+        if (parts.length === 1 && !parts[0].includes('.')) {
+          setSelectedUserForChecker(parts[0]);
+          setActiveTab('user-checker');
+          return;
+        }
+      }
+    } catch {
+      // Continue with normal analyzer
+    }
+
     setIsAnalyzing(true);
     setAnalysisError(null);
 
@@ -222,63 +242,110 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#090A0D] text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors duration-200 selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black">
-      {/* Top Navbar */}
+      {/* Top Navbar with Tool Switcher */}
       <Navbar
         darkMode={darkMode}
         onToggleDarkMode={handleToggleDarkMode}
         onOpenHistory={() => setHistoryOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         onScrollToHero={scrollToHero}
+        activeTab={activeTab}
+        onChangeTab={(tab) => {
+          setActiveTab(tab);
+          scrollToHero();
+        }}
       />
 
       {/* Main Content View */}
       <main className="flex-1">
-        <div ref={heroRef}>
-          <Hero onAnalyze={handleAnalyze} isLoading={isAnalyzing} />
-        </div>
+        {activeTab === 'downloader' ? (
+          <>
+            <div ref={heroRef}>
+              <Hero
+                onAnalyze={handleAnalyze}
+                isLoading={isAnalyzing}
+                activeTab={activeTab}
+                onChangeTab={(tab) => {
+                  setActiveTab(tab);
+                  scrollToHero();
+                }}
+              />
+            </div>
 
-        {/* Analysis Error Alert */}
-        {analysisError && (
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 mb-8 animate-in fade-in duration-200">
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-start justify-between gap-3 text-red-700 dark:text-red-300">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                <div className="text-xs sm:text-sm">
-                  <p className="font-semibold mb-0.5">Could not process URL</p>
-                  <p className="opacity-90">{analysisError}</p>
+            {/* Analysis Error Alert with User Checker Cross-Link */}
+            {analysisError && (
+              <div className="max-w-3xl mx-auto px-4 sm:px-6 mb-8 animate-in fade-in duration-200">
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-start justify-between gap-3 text-red-700 dark:text-red-300">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                    <div className="text-xs sm:text-sm">
+                      <p className="font-semibold mb-0.5">Could not process URL</p>
+                      <p className="opacity-90">{analysisError}</p>
+
+                      {selectedUserForChecker && (
+                        <div className="mt-3 pt-2.5 border-t border-red-200/60 dark:border-red-900/40 flex items-center gap-2">
+                          <span className="text-xs font-medium">Looking for developer @{selectedUserForChecker}?</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('user-checker');
+                              scrollToHero();
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                          >
+                            <User className="w-3.5 h-3.5" />
+                            <span>Inspect @{selectedUserForChecker} Profile &rarr;</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAnalysisError(null)}
+                    className="p-1 hover:text-red-900 dark:hover:text-white rounded"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setAnalysisError(null)}
-                className="p-1 hover:text-red-900 dark:hover:text-white rounded"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* File Explorer Result Area */}
-        {analyzedData && (
-          <div id="explorer-view" className="scroll-mt-20 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <FileExplorer
-              data={analyzedData}
-              onDownloadSelected={handleDownloadSelected}
-              onDownloadAll={handleDownloadAll}
-              onPreview={(file) => setPreviewFile(file)}
-              onDownloadSingle={handleDownloadSingle}
-              onReset={() => {
-                setAnalyzedData(null);
-                scrollToHero();
-              }}
-            />
-          </div>
-        )}
+            {/* File Explorer Result Area */}
+            {analyzedData && (
+              <div id="explorer-view" className="scroll-mt-20 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <FileExplorer
+                  data={analyzedData}
+                  onDownloadSelected={handleDownloadSelected}
+                  onDownloadAll={handleDownloadAll}
+                  onPreview={(file) => setPreviewFile(file)}
+                  onDownloadSingle={handleDownloadSingle}
+                  onReset={() => {
+                    setAnalyzedData(null);
+                    scrollToHero();
+                  }}
+                />
+              </div>
+            )}
 
-        {/* Informational Sections */}
-        <HowItWorks />
-        <Faq />
+            {/* Informational Sections */}
+            <HowItWorks />
+            <Faq />
+          </>
+        ) : (
+          <UserChecker
+            onSelectRepoForDownload={(repoUrl) => {
+              setActiveTab('downloader');
+              handleAnalyze(repoUrl, false);
+            }}
+            initialUsername={selectedUserForChecker || 'philemon12421'}
+            activeTab={activeTab}
+            onChangeTab={(tab) => {
+              setActiveTab(tab);
+              scrollToHero();
+            }}
+          />
+        )}
       </main>
 
       {/* Footer */}

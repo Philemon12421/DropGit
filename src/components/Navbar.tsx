@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowDownToLine, Moon, Sun, History, Settings, Menu, X } from 'lucide-react';
+import { ArrowDownToLine, Moon, Sun, History, Settings, Menu, X, User, Star } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton.tsx';
 
 interface NavbarProps {
@@ -8,6 +8,8 @@ interface NavbarProps {
   onOpenHistory: () => void;
   onOpenSettings: () => void;
   onScrollToHero: () => void;
+  activeTab: 'downloader' | 'user-checker';
+  onChangeTab: (tab: 'downloader' | 'user-checker') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +18,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenHistory,
   onOpenSettings,
   onScrollToHero,
+  activeTab,
+  onChangeTab,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -27,6 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           href="#"
           onClick={(e) => {
             e.preventDefault();
+            onChangeTab('downloader');
             onScrollToHero();
             setMobileMenuOpen(false);
           }}
@@ -40,21 +45,58 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </a>
 
-        {/* Zone 2: Single-line navigation links (Desktop) */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-600 dark:text-neutral-300">
-          <a
-            href="#how-it-works"
-            className="hover:text-black dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
-          >
-            How It Works
-          </a>
-          <a
-            href="#faq"
-            className="hover:text-black dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
-          >
-            FAQ
-          </a>
-        </nav>
+        {/* Zone 2: Navigation & Feature Tabs (Desktop) */}
+        <div className="hidden md:flex items-center gap-6">
+          {/* Segmented Control for Tools */}
+          <div className="flex items-center p-1 bg-black/5 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5">
+            <button
+              type="button"
+              onClick={() => {
+                onChangeTab('downloader');
+                onScrollToHero();
+              }}
+              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'downloader'
+                  ? 'bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white'
+              }`}
+            >
+              <ArrowDownToLine className="w-3.5 h-3.5" />
+              <span>Downloader</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                onChangeTab('user-checker');
+                onScrollToHero();
+              }}
+              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'user-checker'
+                  ? 'bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white'
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Username Checker</span>
+            </button>
+          </div>
+
+          <nav className="flex items-center gap-5 text-sm font-medium text-neutral-600 dark:text-neutral-300">
+            <a
+              href="#how-it-works"
+              className="hover:text-black dark:hover:text-white transition-colors whitespace-nowrap shrink-0 text-xs"
+            >
+              How It Works
+            </a>
+            <a
+              href="#faq"
+              className="hover:text-black dark:hover:text-white transition-colors whitespace-nowrap shrink-0 text-xs"
+            >
+              FAQ
+            </a>
+          </nav>
+        </div>
 
         {/* Zone 3: Actions (PWA install, Theme, History, Settings, CTA) */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
@@ -79,6 +121,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Settings className="w-4 h-4" />
           </button>
+
+          {/* Star DropGit Repo Link */}
+          <a
+            href="https://github.com/Philemon12421/DropGit"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Star DropGit on GitHub"
+            aria-label="Star DropGit repository on GitHub"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-lg border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 text-neutral-800 dark:text-neutral-200 hover:bg-black/5 dark:hover:bg-white/5 transition-all shadow-xs"
+          >
+            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span>Star</span>
+          </a>
 
           <button
             onClick={onToggleDarkMode}
@@ -111,6 +166,40 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Navigation Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden glass-dropdown border-t border-black/5 dark:border-white/10 px-4 pt-3 pb-6 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="grid grid-cols-2 gap-2 p-1 bg-black/5 dark:bg-white/5 rounded-xl">
+            <button
+              type="button"
+              onClick={() => {
+                onChangeTab('downloader');
+                setMobileMenuOpen(false);
+              }}
+              className={`flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'downloader'
+                  ? 'bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400'
+              }`}
+            >
+              <ArrowDownToLine className="w-3.5 h-3.5" />
+              <span>Downloader</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                onChangeTab('user-checker');
+                setMobileMenuOpen(false);
+              }}
+              className={`flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'user-checker'
+                  ? 'bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400'
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Username Checker</span>
+            </button>
+          </div>
+
           <nav className="flex flex-col space-y-2 text-sm font-medium text-neutral-700 dark:text-neutral-200">
             <a
               href="#how-it-works"

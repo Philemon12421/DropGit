@@ -71,3 +71,82 @@ export interface HistoryItem {
   fileCount: number;
   size?: number;
 }
+
+export interface GitHubAchievement {
+  id: string;
+  name: string;
+  description: string;
+  tier?: 'bronze' | 'silver' | 'gold';
+  icon: string;
+}
+
+export interface GitHubUserRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  description?: string;
+  htmlUrl: string;
+  stars: number;
+  forks: number;
+  language?: string;
+  updatedAt: string;
+  defaultBranch: string;
+  isFork: boolean;
+}
+
+export interface GitHubUserCommitEvent {
+  id: string;
+  type: string;
+  repoName: string;
+  repoUrl: string;
+  createdAt: string;
+  message?: string;
+  sha?: string;
+}
+
+export interface GitHubUserProfile {
+  login: string;
+  id: number;
+  avatarUrl: string;
+  htmlUrl: string;
+  name?: string;
+  company?: string;
+  blog?: string;
+  location?: string;
+  email?: string;
+  hireable?: boolean;
+  bio?: string;
+  twitterUsername?: string;
+  publicRepos: number;
+  publicGists: number;
+  followers: number;
+  following: number;
+  createdAt: string;
+  updatedAt: string;
+  accountType: 'User' | 'Organization';
+  totalStars: number;
+  accountAgeYears: number;
+  topLanguages: { language: string; count: number }[];
+  achievements: GitHubAchievement[];
+  topRepos: GitHubUserRepo[];
+  recentEvents: GitHubUserCommitEvent[];
+}
+
+export interface GitHubMatchedUser {
+  login: string;
+  id: number;
+  avatarUrl: string;
+  htmlUrl: string;
+  type: string;
+}
+
+export interface UserCheckResponse {
+  success: boolean;
+  exists: boolean;
+  username: string;
+  profile?: GitHubUserProfile;
+  matchingUsers?: GitHubMatchedUser[];
+  error?: string;
+}
+
+

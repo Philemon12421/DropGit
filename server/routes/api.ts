@@ -264,3 +264,156 @@ apiRouter.get('/rate-limit', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// GitHub User Profile & Username Checker endpoint
+apiRouter.get('/user-profile', async (req: Request, res: Response) => {
+  try {
+    const rawUsername = req.query.username as string;
+    if (!rawUsername) {
+      res.status(400).json({ success: false, exists: false, error: 'Username is required' });
+      return;
+    }
+
+    const cleanUsername = rawUsername.trim().replace(/^@/, '').split('/')[0];
+    const headers: HeadersInit = {
+      'User-Agent': 'DropGit-Universal-Downloader',
+      'Accept': 'application/vnd.github.v3+json',
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+
+    // 1. Fetch user metadata
+    const userRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}`, { headers });
+    if (!userRes.ok) {
+      if (userRes.status === 404) {
+        res.json({ success: true, exists: false, username: cleanUsername });
+        return;
+      }
+      res.status(userRes.status).json({ success: false, exists: false, error: `GitHub API HTTP ${userRes.status}` });
+      return;
+    }
+
+    const userData = await userRes.json();
+
+    // 2. Fetch top repositories
+    let reposData: any[] = [];
+    try {
+      const reposRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/repos?sort=stars&per_page=12`, { headers });
+      if (reposRes.ok) {
+        reposData = await reposRes.json();
+      }
+    } catch {
+      // Repos optional
+    }
+
+    // 3. Fetch recent events
+    let eventsData: any[] = [];
+    try {
+      const eventsRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/events/public?per_page=15`, { headers });
+      if (eventsRes.ok) {
+        eventsData = await eventsRes.json();
+      }
+    } catch {
+      // Events optional
+    }
+
+    let totalStars = 0;
+    const languageCounts: Record<string, number> = {};
+
+    const topRepos = (Array.isArray(reposData) ? reposData : []).map((repo: any) => {
+      const stars = repo.stargazers_count || 0;
+      totalStars += stars;
+      if (repo.language) {
+        languageCounts[repo.language] = (languageCounts[repo.language] || 0) + 1;
+      }
+      return {
+        id: repo.id,
+        name: repo.name,
+        fullName: repo.full_name,
+        description: repo.description || '',
+        htmlUrl: repo.html_url,
+        stars,
+        forks: repo.forks_count || 0,
+        language: repo.language || undefined,
+        updatedAt: repo.updated_at,
+        defaultBranch: repo.default_branch || 'main',
+        isFork: Boolean(repo.fork),
+      };
+    });
+
+    const topLanguages = Object.entries(languageCounts)
+      .map(([language, count]) => ({ language, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const createdDate = new Date(userData.created_at);
+    const now = new Date();
+    const accountAgeYears = Math.max(1, Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)));
+
+    const recentEvents: any[] = [];
+    if (Array.isArray(eventsData)) {
+      for (const ev of eventsData) {
+        if (ev.type === 'PushEvent' && ev.payload?.commits) {
+          for (const c of ev.payload.commits) {
+            recentEvents.push({
+              id: `${ev.id}-${c.sha?.slice(0, 7)}`,
+              type: 'commit',
+              repoName: ev.repo?.name || '',
+              repoUrl: `https://github.com/${ev.repo?.name || ''}`,
+              createdAt: ev.created_at,
+              message: c.message,
+              sha: c.sha?.slice(0, 7),
+            });
+            if (recentEvents.length >= 8) break;
+          }
+        } else if (ev.type === 'CreateEvent' || ev.type === 'WatchEvent' || ev.type === 'PullRequestEvent') {
+          recentEvents.push({
+            id: ev.id,
+            type: ev.type.replace('Event', '').toLowerCase(),
+            repoName: ev.repo?.name || '',
+            repoUrl: `https://github.com/${ev.repo?.name || ''}`,
+            createdAt: ev.created_at,
+          });
+        }
+        if (recentEvents.length >= 8) break;
+      }
+    }
+
+    res.json({
+      success: true,
+      exists: true,
+      username: cleanUsername,
+      profile: {
+        login: userData.login,
+        id: userData.id,
+        avatarUrl: userData.avatar_url,
+        htmlUrl: userData.html_url,
+        name: userData.name || userData.login,
+        company: userData.company || undefined,
+        blog: userData.blog || undefined,
+        location: userData.location || undefined,
+        email: userData.email || undefined,
+        hireable: userData.hireable || undefined,
+        bio: userData.bio || undefined,
+        twitterUsername: userData.twitter_username || undefined,
+        publicRepos: userData.public_repos || 0,
+        publicGists: userData.public_gists || 0,
+        followers: userData.followers || 0,
+        following: userData.following || 0,
+        createdAt: userData.created_at,
+        updatedAt: userData.updated_at,
+        accountType: userData.type === 'Organization' ? 'Organization' : 'User',
+        totalStars,
+        accountAgeYears,
+        topLanguages,
+        achievements: [],
+        topRepos,
+        recentEvents,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, exists: false, error: err.message });
+  }
+});
+
