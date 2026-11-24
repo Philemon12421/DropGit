@@ -95,6 +95,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               FAQ
             </a>
+            <a
+              href="/blog"
+              className="hover:text-black dark:hover:text-white transition-colors whitespace-nowrap shrink-0 text-xs"
+            >
+              Blog
+            </a>
           </nav>
         </div>
 
@@ -214,6 +220,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             >
               FAQ
+            </a>
+            <a
+              href="/blog"
+              className="px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              Blog
             </a>
           </nav>
 
