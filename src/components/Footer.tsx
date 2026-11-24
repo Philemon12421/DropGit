@@ -68,6 +68,21 @@ export const Footer: React.FC<FooterProps> = ({ onScrollToTop }) => {
                 </a>
               </li>
               <li>
+                <a href="/blog" className="hover:text-black dark:hover:text-white transition-colors">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="/about" className="hover:text-black dark:hover:text-white transition-colors">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="/contact" className="hover:text-black dark:hover:text-white transition-colors">
+                  Contact
+                </a>
+              </li>
+              <li>
                 <a
                   href="https://github.com/Philemon12421/DropGit"
                   target="_blank"
@@ -90,6 +105,16 @@ export const Footer: React.FC<FooterProps> = ({ onScrollToTop }) => {
               <li className="text-neutral-500">No account required</li>
               <li className="text-neutral-500">Zero data retention</li>
               <li className="text-neutral-500">SSRF hardened architecture</li>
+              <li>
+                <a href="/privacy" className="hover:text-black dark:hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="/terms" className="hover:text-black dark:hover:text-white transition-colors">
+                  Terms of Use
+                </a>
+              </li>
               <li>
                 <button
                   type="button"
