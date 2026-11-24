@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import { apiRouter } from './server/routes/api.ts';
+import { buildSite } from './scripts/site/render.mjs';
 
 // Fix for environments or tools setting globalThis.__dirname to '.'
 if (typeof (globalThis as any).__dirname === 'string' && (globalThis as any).__dirname === '.') {
@@ -40,6 +41,14 @@ async function startServer() {
   app.get('/sitemap.xml', (_req, res) => {
     res.type('application/xml');
     res.sendFile(path.resolve(publicPath, 'sitemap.xml'));
+  });
+
+  // Prerendered blog + legal pages (generated from /content by scripts/site/render.mjs)
+  const sitePages = () => new Map(buildSite().map((p) => [p.urlPath, p.html]));
+  app.get(['/blog', '/blog/:slug', '/about', '/contact', '/privacy', '/terms'], (req, res, next) => {
+    const html = sitePages().get(req.path.replace(/\/$/, ''));
+    if (!html) return next();
+    res.type('html').send(html);
   });
 
   // Vite middleware in dev or static files in production
