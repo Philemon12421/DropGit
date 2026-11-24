@@ -52,6 +52,8 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          // Prerendered pages (blog + legal) are real HTML files; don't let the SW answer them with the SPA shell.
+          navigateFallbackDenylist: [/^\/api\//, /^\/blog/, /^\/about/, /^\/contact/, /^\/privacy/, /^\/terms/],
         },
         devOptions: {
           enabled: true,
